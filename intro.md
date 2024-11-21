@@ -2,6 +2,7 @@
 
 - [Official SDL Wiki](https://wiki.libsdl.org/SDL3/CategoryAPIFunction)
 - [Game Programming Patterns (C++)](http://gameprogrammingpatterns.com/)
+- Check out the sample implementation in the `hello_world` folder
 
 # What is SDL
 
@@ -34,7 +35,7 @@ it can more effectively guarantee memory locality, among others.
 Thinking of game state as big chunks of pure data that need to be
 processed is clever!
 
-## Abstracting Code in C
+## Abstracting Code in C!
 
 Header File: `engine/game.h`
 
@@ -72,7 +73,6 @@ Implementation File: `engine/game.c`
 #include "game.h"
 #include "common.h"
 #include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
 #include <time.h>
 
 // That's how we simulate object oriented programming in C
@@ -211,18 +211,6 @@ int main(int argc, char **argv)
 
     while (ctx.is_game_running)
     {
-        // Before trying to render stuff on the screen,
-        // we should first check if any new input is available
-        while (SDL_PollEvent(&event))
-        {
-            // SDL_QUIT = the window is about to close, for whatever
-            // reason (exit button, alt f4 etc)
-            if (event.type == SDL_QUIT)
-                ctx.is_game_running = false;
-
-            // TODO: Event handling!
-        }
-
         // Calculating the amount of milliseconds that passed
         // since the last execution of this loop. Delta time is
         // important, because some frames might take longer to update
@@ -233,10 +221,33 @@ int main(int argc, char **argv)
         delta = cur_time - last_time;
         last_time = cur_time;
 
+        // Before trying to render stuff on the screen,
+        // we should first check if any new input is available
+        while (SDL_PollEvent(&event))
+        {
+            // SDL_QUIT = the window is about to close, for whatever
+            // reason (exit button, alt f4 etc)
+            switch (event.type)
+            {
+                case SDL_QUIT:
+                    ctx.is_game_running = false;
+                    break;
+
+                case SDL_MOUSEBUTTONDOWN:
+                    // Mouse position is accessible from the event struct,
+                    // which is efficiently defined to be a C union!
+                    if (ng_point_in_rect(&example, event.button.x, event.button.y))
+                        example.x += 10;
+                    
+                    break;
+            }
+        }
+
         SDL_SetRenderDrawColor(ctx.game.renderer, 10, 10, 10, 255);
         SDL_RenderClear(ctx.game.renderer);
 
-        // Will just the active render draw color, as defined earlier!
+        SDL_SetRenderDrawColor(ctx.game.renderer, 255, 0, 0, 255);
+        // Will use the active render draw color, as defined earlier!
         SDL_RenderFillRect(ctx.game.renderer, &example);
 
         // Sends the instructions into our GPU, updates the screen
@@ -246,7 +257,8 @@ int main(int argc, char **argv)
         // This is an important performance measure, since
         // updating faster is pointless! The frequency is too fast
         // for it to ever be visible on the monitor
-        SDL_Delay(MS_PER_FRAME - delta);
+        if (delta < MS_PER_FRAME)
+            SDL_Delay(MS_PER_FRAME - delta);
     }
 
     ng_game_destroy(&ctx.game);
@@ -273,7 +285,7 @@ src/
 ```make
 # Returns all c files nested or not in $(1)
 define collect_sources
-    $(shell find $(1) -name '*.c')
+	$(shell find $(1) -name '*.c')
 endef
 
 # Modify these variables to apply your preferences
@@ -283,7 +295,8 @@ EXE_NAME := bin
 SOURCES := $(call collect_sources, src)
 OBJECTS := $(patsubst %.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
-LIBRARIES := SDL2
+# Make sure it is already installed! Consult your package manager
+LIBRARIES := sdl2 SDL2_image
 C_FLAGS := `pkg-config --cflags $(LIBRARIES)`
 L_FLAGS := `pkg-config --libs $(LIBRARIES)` -lm
 
@@ -291,28 +304,28 @@ L_FLAGS := `pkg-config --libs $(LIBRARIES)` -lm
 .PHONY: run clean
 
 run: $(EXE_NAME)
-    @# Executing the program once it has successfully been built
-    @./$(EXE_NAME)
+	@# Executing the program once it has successfully been built
+	@./$(EXE_NAME)
 
 $(EXE_NAME): $(OBJECTS)
-    @# Lines prefixed with @ will not be displayed in the output of the `make` command
-    @# Note however that *their* output, will
-    @echo "{Makefile} Creating the executable"
-    $(CC) $(OBJECTS) -o $(EXE_NAME) $(L_FLAGS)
+	@# Lines prefixed with @ will not be displayed in the output of the `make` command
+	@# Note however that *their* output, will
+	@echo "{Makefile} Creating the executable"
+	@$(CC) $(OBJECTS) -o $(EXE_NAME) $(L_FLAGS)
 
 objects/%.o: %.c
-    @# Making sure that the directory already exists before creating the object
-    @# man mkdir!
-    @mkdir -p $(dir $@)
+	@# Making sure that the directory already exists before creating the object
+	@# man mkdir!
+	@mkdir -p $(dir $@)
 
-    @echo "{Makefile} Building $@"
-    $(CC) -c $< -o $@ $(C_FLAGS)
+	@echo "{Makefile} Building $@"
+	$(CC) -c $< -o $@ $(C_FLAGS)
 
 # Can be called to destroy all build files
 # A clean build might rarely result in a bug fix
 clean:
-    rm -rf $(OBJ_DIR) # OBJ_DIR != / O_O
-    rm $(EXE_NAME)
+	rm -rf $(OBJ_DIR) # OBJ_DIR != / O_O
+	rm $(EXE_NAME)
 ```
 
 ## Simple 2D Math Abstractions
@@ -328,24 +341,17 @@ trivial struct as of now.
 #ifndef _NG_MATH_H
 #define _NG_MATH_H
 
-#define PI 3.14159
-
-// C++: Template it instead
-typedef struct
-{
-    int x, y;
-} ng_vec2i_t;
-
 typedef struct
 {
     float x, y;
 } ng_vec2_t;
 
 // Much faster to just copy and return by value,
-// no need to introduce indirection like previously
+// no need to introduce indirection (pointers) like previously.
+// Let's hope that our compiler will store this struct on a set of registers
 ng_vec2_t ng_vec2_add(ng_vec2_t first, ng_vec2_t second);
 ng_vec2_t ng_vec2_subtract(ng_vec2_t first, ng_vec2_t second);
-ng_vec2_t ng_vec2_multiply_by_scalar(ng_vec2_t src, float scalar);
+ng_vec2_t ng_vec2_multiply_by_scalar(ng_vec2_t vec, float scalar);
 
 float ng_vec2_get_magnitude(ng_vec2_t vector);
 ng_vec2_t ng_vec2_normalize(ng_vec2_t src);
@@ -359,12 +365,7 @@ ng_vec2_t ng_vec2_normalize(ng_vec2_t src);
 
 ng_vec2_t ng_vec2_add(ng_vec2_t first, ng_vec2_t second)
 {
-    ng_vec2_t result = {
-        first.x + second.x,
-        first.y + second.y,
-    };
-
-    return result;
+    return (ng_vec2_t) { first.x + second.x, first.y + second.y };
 }
 
 // TODO: Implement the boring remainder yourself
@@ -376,7 +377,7 @@ float ng_vec2_get_magnitude(ng_vec2_t vector)
 
 ng_vec2_t ng_vec2_normalize(ng_vec2_t src)
 {
-    // Normalized vectors are super important!
+    // Normalized vectors are super important! They represent plain directions
     return ng_vec2_multiply_by_scalar(src, 1.0f / ng_vec2_get_magnitude(src));
 }
 ```
