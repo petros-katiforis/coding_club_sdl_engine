@@ -203,12 +203,13 @@ int main(int argc, char **argv)
     // or just SDL_Rect example = {10, 10, 100, 100};
     SDL_Rect example = {
         .x = 10, .y = 10,
-        .w = 100, .y = 100,
+        .w = 100, .h = 100,
     };
 
     uint32_t last_time = 0;
     uint32_t delta = 0;
-
+    SDL_Event event;
+    
     while (ctx.is_game_running)
     {
         // Calculating the amount of milliseconds that passed
