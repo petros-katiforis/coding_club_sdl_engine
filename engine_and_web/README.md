@@ -1,8 +1,8 @@
 # Simple SDL Engine
 
-> WARNING: Audio is temporally disabled so that it can work in WSL. To
-> enable it back, just delete the `-D NO_AUDIO` option inside the
-> Makefile.
+> WARNING: Audio is temporarily disabled so that the app can be played
+> in WSL. To enable it back, just delete the `-D NO_AUDIO` option
+> inside the Makefile.
 
 ## Building for the Web
 
