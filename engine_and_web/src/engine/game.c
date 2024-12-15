@@ -25,8 +25,10 @@ void ng_game_create(ng_game_t *game, const char *title, int width, int height)
         ng_die("failed to initialize SDL2/SDL_ttf");
 
     // Initializing SDL_mixer with the standard settings
+#ifndef NO_AUDIO
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
         ng_die("failed to open audio device and initialize SDL_Mixer");
+#endif
     
     game->width = width;
     game->height = height;
@@ -115,4 +117,7 @@ void ng_game_destroy(ng_game_t *game)
     SDL_Quit();
     IMG_Quit();
     TTF_Quit();
+#ifndef NO_AUDIO
+    Mix_Quit();
+#endif
 }

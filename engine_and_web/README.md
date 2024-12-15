@@ -1,5 +1,9 @@
 # Simple SDL Engine
 
+> WARNING: Audio is temporally disabled so that it can work in WSL. To
+> enable it back, just delete the `-D NO_AUDIO` option inside the
+> Makefile.
+
 ## Building for the Web
 
 The engine supports building for the web as well. Just execute the
