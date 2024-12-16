@@ -2,7 +2,6 @@
 
 - [Official SDL Wiki](https://wiki.libsdl.org/SDL3/CategoryAPIFunction)
 - [Game Programming Patterns (C++)](http://gameprogrammingpatterns.com/)
-- Check out the sample implementation in the `hello_world` folder
 
 # What is SDL
 
