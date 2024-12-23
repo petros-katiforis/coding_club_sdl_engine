@@ -3,48 +3,30 @@
 
 #define SQUARE(x) (x * x)
 
-float ng_vector_get_magnitude(ng_vec2 *source)
+float ng_vec2_get_magnitude(ng_vec2_t vec)
 {
-    return sqrt(SQUARE(source->x) + SQUARE(source->y));
-}
-
-void ng_vector_multiply_by(ng_vec2 *result, ng_vec2 *source, float scalar)
-{
-    result->x = source->x * scalar;
-    result->y = source->y * scalar;
-}
-
-void ng_vector_normalize(ng_vec2 *result, ng_vec2 *source)
-{
-    float magnitude = ng_vector_get_magnitude(source);
-
-    result->x = source->x / magnitude;
-    result->y = source->y / magnitude;
+    return sqrt(SQUARE(vec.x) + SQUARE(vec.y));
 }
 
 // Since operator overloading is not available, I have to do it this way
-void ng_vectors_add(ng_vec2 *result, ng_vec2 *first, ng_vec2 *second)
+ng_vec2_t ng_vec2_normalize(ng_vec2_t vec)
 {
-    result->x = first->x + second->x;
-    result->y = first->y + second->y;
+    return ng_vec2_multiply_by_scalar(vec, 1.0f / ng_vec2_get_magnitude(vec));
 }
 
-void ng_vectors_substract(ng_vec2 *result, ng_vec2 *first, ng_vec2 *second)
+ng_vec2_t ng_vec2_add(ng_vec2_t first, ng_vec2_t second)
 {
-    result->x = first->x - second->x;
-    result->y = first->y - second->y;
+    return (ng_vec2_t) { first.x + second.x, first.y + second.y };
 }
 
-void ng_vectors_multiply(ng_vec2 *result, ng_vec2 *first, ng_vec2 *second)
+ng_vec2_t ng_vec2_subtract(ng_vec2_t first, ng_vec2_t second)
 {
-    result->x = first->x * second->x;
-    result->y = first->y * second->y;
+    return (ng_vec2_t) { first.x - second.x, first.y - second.y };
 }
 
-void ng_vectors_divide(ng_vec2 *result, ng_vec2 *first, ng_vec2 *second)
+ng_vec2_t ng_vec2_multiply_by_scalar(ng_vec2_t vec, float scalar)
 {
-    result->x = first->x / second->x;
-    result->y = first->y / second->y;
+    return (ng_vec2_t) { vec.x * scalar, vec.y * scalar };
 }
 
 bool ng_is_point_inside(SDL_Rect *rect, int x, int y)
@@ -59,3 +41,11 @@ int ng_get_distance(int x, int y, int other_x, int other_y)
     // Basically getting the magnitude of the distance vector
     return sqrt(SQUARE(other_x - x) + SQUARE(other_y - y));
 }
+
+float ng_clamp(float min, float max, float value)
+{
+    if (value <= min) return min;
+    if (value >= max) return max;
+    return value;
+}
+

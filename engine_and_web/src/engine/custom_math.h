@@ -7,19 +7,18 @@
 typedef struct
 {
     float x, y;
-} ng_vec2;
+} ng_vec2_t;
 
-float ng_vector_get_magnitude(ng_vec2 *source);
-void ng_vector_normalize(ng_vec2 *result, ng_vec2 *source);
-void ng_vector_multiply_by(ng_vec2 *result, ng_vec2 *source, float scalar);
+float ng_vector_get_magnitude(ng_vec2_t vec);
+ng_vec2_t ng_vec2_normalize(ng_vec2_t vec);
 
-void ng_vectors_add(ng_vec2 *result, ng_vec2 *first, ng_vec2 *second);
-void ng_vectors_substract(ng_vec2 *result, ng_vec2 *first, ng_vec2 *second);
-void ng_vectors_multiply(ng_vec2 *result, ng_vec2 *first, ng_vec2 *second);
-void ng_vectors_divide(ng_vec2 *result, ng_vec2 *first, ng_vec2 *second);
+ng_vec2_t ng_vec2_add(ng_vec2_t first, ng_vec2_t second);
+ng_vec2_t ng_vec2_subtract(ng_vec2_t first, ng_vec2_t second);
+ng_vec2_t ng_vec2_multiply_by_scalar(ng_vec2_t vec, float scalar);
 
 // Other math-related functions
 bool ng_is_point_inside(SDL_Rect *rect, int x, int y);
 int ng_get_distance(int x, int y, int other_x, int other_y);
+float ng_clamp(float min, float max, float value);
 
 #endif
