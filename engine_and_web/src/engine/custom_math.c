@@ -1,7 +1,7 @@
 #include "custom_math.h"
 #include <math.h>
 
-#define SQUARE(x) (x * x)
+#define SQUARE(x) ((x) * (x))
 
 float ng_vec2_get_magnitude(ng_vec2_t vec)
 {
